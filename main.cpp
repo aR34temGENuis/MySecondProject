@@ -1,6 +1,9 @@
 #include <iostream>
 #include <limits>
 #include <string>
+#include <chrono>
+#include <thread>
+
 
 void PrintHeader() 
 	{
@@ -45,21 +48,24 @@ int main ()
 				{
 				case 1:
 					std::cout << "В будущем будет добавлена возможность добавление в список нового аниме.\n\n" << std::endl;
+					std::this_thread::sleep_for(std::chrono::seconds(3));
 					break;
 				case 2:
 					std::cout << "В будущем будет добавлена возможность убирать аниме из списка.\n\n" << std::endl;
+					std::this_thread::sleep_for(std::chrono::seconds(3));
 					break;
 				case 3:
 					std::cout << "В будущем будет добавлена возможность выводить таблицу.\n\n" << std::endl;
+					std::this_thread::sleep_for(std::chrono::seconds(3));
 					break;
 				case 0:
 					std::cout << "Выход из программы.\n" << std::endl;
-					
-					break;
+					std::this_thread::sleep_for(std::chrono::seconds(3));
+					return 0;
 				default:
 					std::cout << "Нет такого пункта в меню. Повторите ввод.\n\n" << std::endl;
+					std::this_thread::sleep_for(std::chrono::seconds(3));
 					break;
 				}
 		}
-	return 0;
 	}
