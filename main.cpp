@@ -5,6 +5,8 @@
 #include <thread>
 #include <vector>
 #include <iomanip>
+#include <cctype>
+
 
 struct AnimeEntry
 	{
@@ -100,6 +102,88 @@ int ReadInt ()
 				std::cout << "Ошибка ввода. Введите число: " << std::endl;
 				}
 	}
+
+std::string ReadyNonEmptyLine(const std:: string& promt) //Считываем обязательную строку, поддерживаем пробелы внутри строки, триммим пробелы по краям и запрещаем пустой ввод.
+	{
+		while(true)
+		{
+		std::cout << promt << std::flush;
+		std::string s;
+		std::getline(std::cin, s);
+		while (!s.empty() && std::isspace(static_cast<unsigned char>(s.front()))) s.erase(s.begin()); //Убираем пробелы слева
+		while (!s.empty() && std::isspace(static_cast<unsigned char>(s.back()))) s.pop_back(); //Убираем пробелы справа
+		if (!s.empty()) return s;
+		std::cout << "Поле обязательное. Повторите ввод.\n";
+		}
+	}
+
+int ReadRating0to10(const std::string& promt)
+	{
+		while(true)
+			{
+				std::cout << promt << std::flush;
+				std::string s;
+				std::getline(std::cin, s);
+// Попробуем распарсить int из строки
+				try 
+					{
+						size_t pos = 0;
+						int v = std::stoi(s, &pos);
+						while (pos < s.size() && std::isspace(static_cast<unsigned char>(s[pos]))) ++pos;
+						if (pos != s.size())
+							{
+								std::cout << "Введите только число.\n";
+								continue;
+							}
+						if (v>= 0 && v <=10) return v;
+						std::cout << "Оценка должна быть от 0 до 10.\n";
+					}
+				catch(...)
+					{
+						std::cout << "Ошибка ввода. Введите число от 0 до 10.\n";
+					}
+			}
+	}
+
+bool ReadYesOrNo(const std::string& promt)
+	{
+		while (true)
+			{
+				std::cout << promt << std::flush;
+				std::string s;
+				std::getline(std::cin, s);
+				for (char& ch : s) ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+				while (!s.empty() && std::isspace(static_cast<unsigned char>(s.front()))) s.erase(s.begin());
+				while (!s.empty() && std::isspace(static_cast<unsigned char>(s.back()))) s.pop_back();
+				if (s == "y" || s == "yes" || s == "1" || s == "да" || s == "д" || s == "Да" || s == "Yes") return true;
+				if (s == "n" || s == "no" || s == "0" || s == "нет" || s == "н" || s == "Нет" || s == "No") return false;
+				std::cout << "Введите Да/Нет (д/н) или Yes/No (y/n).\n";
+			}
+	}
+
+void AddAnimeFlow()
+	{
+		while (true)
+			{
+				AnimeEntry a;
+				std::cout << "\n--- Добавление нового аниме ---\n";
+				a.title = ReadyNonEmptyLine("Название аниме: ");
+				a.description = ReadyNonEmptyLine("Краткое описание: ");
+				a.watchStatus = ReadyNonEmptyLine("Статус просмотра (например: Смотрю/Просмотрено/В планах/Брошено): ");
+				a.rating = ReadRating0to10("Своя оценка (от 0 до 10): ");
+				a.hasSequel = ReadYesOrNo("Существует ли продолжение этого аниме? (Да/Нет): ");
+				g_anime.push_back(a);
+				std::cout << "Запись добавлена. Сейчас в списке: " << g_anime.size() << " шт.\n";
+				bool AddMoreAnime = ReadYesOrNo("Добавить ещё одно аниме? (Да/Нет)");
+				if (!AddMoreAnime)
+					{
+						std::cout << "Возврат в меню.\n\n";
+						return;
+					}
+				std::cout << "\n";
+			}
+	}
+	
 void PrintTable()
 	{
 		const int W_NO = 4;
@@ -153,17 +237,12 @@ void PrintTable()
 				std::cout << " | "; PrintCell(std::to_string(a.rating), W_RATING);
 				std::cout << " | "; PrintCell(sequelText, W_SEQUEL);
 				std::cout << " |\n";
+				line (); // Разделитель для каждой отдельной ячейки
 			}
-		line();
 	}			 
 int main ()
 	{
 		PrintHeader();
-		g_anime.push_back(
-			{
-				"Overlord", "ГГ перерождается в всемогущим скелетом в мире игры", "Просмотрено", 10, true
-			}
-			);
 		while (true)
 		{
 			PrintMain();
@@ -172,7 +251,7 @@ int main ()
 			switch (choice)
 				{
 				case 1:
-					std::cout << "В будущем будет добавлена возможность добавление в список нового аниме.\n\n" << std::endl;
+					AddAnimeFlow();
 					std::this_thread::sleep_for(std::chrono::seconds(3));
 					break;
 				case 2:
